@@ -1,4 +1,5 @@
 import { LoginRequest } from "./types";
+import database from "../../db";
 
 export class Player {
     static idCounter = 1;
@@ -20,9 +21,8 @@ export class Player {
     
     register(data:LoginRequest) {
         // TODO: MANAGE DB
-        const players = this.players as Player[] 
         const { name, password } = data;
-        const existingPlayer = players.find(p => p.name === name);
+        const existingPlayer = database.players.find(p => p.name === name);
 
         if (existingPlayer && existingPlayer.password !== password) {
             this.ws.send(JSON.stringify({
@@ -34,7 +34,7 @@ export class Player {
         }
 
         const player = existingPlayer || new Player(name, password, this.ws);
-        if (!existingPlayer) players.push(player);
+        if (!existingPlayer) database.players.push(player);
 
         this.ws.send(JSON.stringify({
             type: 'reg',
