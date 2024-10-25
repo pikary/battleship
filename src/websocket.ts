@@ -1,52 +1,26 @@
-import {WebSocketServer} from 'ws'
-import { Player } from './model/Player';
+import { WebSocketServer } from 'ws'
+import { Player, PlayerFactory } from './model/Player';
 import { Room } from './model/Room';
-import { SocketRequest } from './types';
+import { SocketRequest, RequestTypes } from './types';
+import { LoginRequest } from './model/Player/types';
+import database from './db';
 const wss = new WebSocketServer({ port: 8080 });
 
 const players: Player[] = [];
 const rooms: Room[] = [];
-const games: Game[] = [];
+// const games: Game[] = [];
 
-// wss.on('connection', (ws) => {
-//     ws.on('message', (message:SocketRequest<> ) => {
-        
-//     });
+wss.on('connection', (ws) => {
+    ws.on('message', (message: SocketRequest) => {
+        switch (message.type) {
+            case RequestTypes.REGISTER:
+                const reqbody = (message.data) as LoginRequest
+                PlayerFactory.createPlayer(reqbody.name, reqbody.password, ws, database)
+                break
+        }
+    });
 
-
-
-//     ws.on('close', () => {
-//         console.log('Player disconnected');
-//     });
-// });
-
-
-
-function registerPlayer(data: any, ws: WebSocket) {
-    const { name, password } = data;
-    const existingPlayer = players.find((p) => p.name === name);
-    
-
-    if (existingPlayer && existingPlayer.password !== password) {
-        ws.send(
-            JSON.stringify({
-                type: 'reg',
-                data: { name, index: null, error: true, errorText: 'Incorrect password' },
-                id: 0,
-            })
-        );
-        return;
-    }
-
-    // If player doesn't exist, create a new one
-    const player = existingPlayer || new Player(name, password, ws);
-    if (!existingPlayer) players.push(player);
-
-    ws.send(
-        JSON.stringify({
-            type: 'reg',
-            data: { name: player.name, index: player.id, error: false },
-            id: 0,
-        })
-    );
-}
+    ws.on('close', () => {
+        console.log('Player disconnected');
+    });
+});

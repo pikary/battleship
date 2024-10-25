@@ -1,5 +1,45 @@
 import { LoginRequest } from "./types";
-import database from "../../db";
+import { IDatabase } from "../../db";
+import { WebSocket } from "ws";
+
+export class PlayerFactory {
+    static createPlayer(name: string, password: string, ws: WebSocket, db: IDatabase): Player | null {
+        // Check if the player already exists in the database
+        const existingPlayer = db.players.find((pl) => pl.name === name);
+
+        if (existingPlayer) {
+            if (existingPlayer.password !== password) {
+                ws.send(JSON.stringify({
+                    type: 'reg',
+                    data: { name, index: null, error: true, errorText: 'Incorrect password' },
+                    id: 0,
+                }));
+                return null;
+            }
+
+            // Return the existing player if the password is correct
+            existingPlayer.sendMessage('reg', {
+                name: existingPlayer.name,
+                index: existingPlayer.id,
+                error: false,
+            });
+            return existingPlayer;
+        }
+
+        // If the player doesn't exist, create a new one
+        const newPlayer = new Player(name, password, ws);
+        db.players.push(newPlayer); // Add the new player to the database
+
+        // Send a successful registration message to the new player
+        newPlayer.sendMessage('reg', {
+            name: newPlayer.name,
+            index: newPlayer.id,
+            error: false,
+        });
+
+        return newPlayer;
+    }
+}
 
 export class Player {
     static idCounter = 1;
@@ -18,28 +58,5 @@ export class Player {
     sendMessage(type: string, data: any) {
         this.ws.send(JSON.stringify({ type, data, id: 0 }));
     }
-    
-    register(data:LoginRequest) {
-        // TODO: MANAGE DB
-        const { name, password } = data;
-        const existingPlayer = database.players.find(p => p.name === name);
 
-        if (existingPlayer && existingPlayer.password !== password) {
-            this.ws.send(JSON.stringify({
-                type: 'reg',
-                data: { name, index: null, error: true, errorText: 'Incorrect password' },
-                id: 0,
-            }));
-            return;
-        }
-
-        const player = existingPlayer || new Player(name, password, this.ws);
-        if (!existingPlayer) database.players.push(player);
-
-        this.ws.send(JSON.stringify({
-            type: 'reg',
-            data: { name: player.name, index: player.id, error: false },
-            id: 0,
-        }));
-    }
 }

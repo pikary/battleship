@@ -1,7 +1,7 @@
 import { Player } from "../model/Player"
 import { Room } from "../model/Room"
 
-interface IDatabase{
+export interface IDatabase{
     players:Player[],
     rooms: Room[]
 }

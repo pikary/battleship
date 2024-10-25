@@ -17,9 +17,9 @@ export enum ResponseTypes{
     FINISH='finish',
 }
 
-export interface SocketRequest<T>{
+export interface SocketRequest{
     type:RequestTypes,
-    data:T,
+    data:any,
     id:number
 }
 
