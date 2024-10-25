@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws'
 import { Player, PlayerFactory } from './model/Player';
-import { Room } from './model/Room';
+import { Room, RoomFactory } from './model/Room';
 import { SocketRequest, RequestTypes, ResponseTypes } from './types';
 import { LoginRequest } from './model/Player/types';
 import database from './db';
@@ -27,7 +27,6 @@ wss.on('connection', (ws) => {
                 console.log(parsed);
                 const reqbody = JSON.parse((parsed.data)) as LoginRequest
                 PlayerFactory.createPlayer(reqbody.name, reqbody.password, ws, database)
-
                 ws.send(JSON.stringify({
                     type: ResponseTypes.UPDATE_ROOM,
                     data: JSON.stringify([
@@ -43,7 +42,7 @@ wss.on('connection', (ws) => {
                     ]),
                     id: 0,
                 }));
-                
+
                 ws.send(JSON.stringify({
                     type: ResponseTypes.UPDATE_WINNERS,
                     data: JSON.stringify([
@@ -54,9 +53,20 @@ wss.on('connection', (ws) => {
                     ]),
                     id: 0,
                 }));
+                console.log('Players : ');
+                console.log(database.players);
 
-
+                
                 break
+
+            case RequestTypes.CREATE_ROOM:
+                // need  to get a user who creaing room.  current user
+                const currentPlayer = database.players.find((p)=>p.ws === ws)
+                const newRoom = RoomFactory.createRoom(currentPlayer,ws,database)
+                console.log('Rooms : ');
+                console.log(database.rooms);
+                break;
+
         }
     });
 
