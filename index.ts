@@ -1,4 +1,5 @@
 import serv from './src/http_server/index'
+import './src/websocket'
 
 const HTTP_PORT = 8181;
 

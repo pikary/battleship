@@ -1,6 +1,7 @@
 import { LoginRequest } from "./types";
 import { IDatabase } from "../../db";
 import { WebSocket } from "ws";
+import { error } from "console";
 
 export class PlayerFactory {
     static createPlayer(name: string, password: string, ws: WebSocket, db: IDatabase): Player | null {
@@ -31,12 +32,12 @@ export class PlayerFactory {
         db.players.push(newPlayer); // Add the new player to the database
 
         // Send a successful registration message to the new player
-        newPlayer.sendMessage('reg', {
-            name: newPlayer.name,
-            index: newPlayer.id,
-            error: false,
-        });
-
+      
+        newPlayer.sendMessage('reg',{
+            name:newPlayer.name,
+            index:newPlayer.id,
+            error:false
+        })
         return newPlayer;
     }
 }
