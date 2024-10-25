@@ -57,7 +57,7 @@ export class Player {
     }
 
     sendMessage(type: string, data: any) {
-        this.ws.send(JSON.stringify({ type, data, id: 0 }));
+        this.ws.send(JSON.stringify({ type, data:JSON.stringify(data), id: 0 }));
     }
 
 }
