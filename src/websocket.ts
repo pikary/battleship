@@ -5,6 +5,7 @@ import { SocketRequest, RequestTypes, ResponseTypes } from './types';
 import { LoginRequest } from './model/Player/types';
 import database from './db';
 import { log } from 'console';
+import { GameFactory } from './model/Game';
 
 const wss = new WebSocketServer({
     port: 3000, perMessageDeflate: false
@@ -20,52 +21,63 @@ wss.on('connection', (ws) => {
     })
     ws.on('message', (message: SocketRequest) => {
         // ws.send(JSON.stringify({msg:'niggers'}))
+        console.log(message);
+        
         const parsed = JSON.parse(message.toString())
-        console.log();
+    
         switch (parsed.type) {
             case RequestTypes.REGISTER:
-                console.log(parsed);
                 const reqbody = JSON.parse((parsed.data)) as LoginRequest
                 PlayerFactory.createPlayer(reqbody.name, reqbody.password, ws, database)
-                ws.send(JSON.stringify({
-                    type: ResponseTypes.UPDATE_ROOM,
-                    data: JSON.stringify([
-                        {
-                            roomId: 1,
-                            roomUsers: [
-                                {
-                                    name: '1 room',
-                                    index: 0,
-                                },
-                            ],
-                        },
-                    ]),
-                    id: 0,
-                }));
+                database.players.forEach((user) => {
+                    user.ws.send(JSON.stringify({
+                        type: ResponseTypes.UPDATE_ROOM,
+                        data: JSON.stringify(database.rooms),
+                        id: 0,
+                    }))
+                })
 
-                ws.send(JSON.stringify({
-                    type: ResponseTypes.UPDATE_WINNERS,
-                    data: JSON.stringify([
-                        {
-                            name: 'nurlan',
-                            wins: 1,
-                        },
-                    ]),
-                    id: 0,
-                }));
-                console.log('Players : ');
-                console.log(database.players);
+                database.players.forEach((user) => {
+                    user.ws.send(JSON.stringify({
+                        type: ResponseTypes.UPDATE_WINNERS,
+                        data: JSON.stringify((database.players.map((i) => ({ ...i, wins: 1 })))),
+                        id: 0,
+                    }));
+                })
+       
 
-                
+
                 break
 
             case RequestTypes.CREATE_ROOM:
                 // need  to get a user who creaing room.  current user
-                const currentPlayer = database.players.find((p)=>p.ws === ws)
-                const newRoom = RoomFactory.createRoom(currentPlayer,ws,database)
-                console.log('Rooms : ');
-                console.log(database.rooms);
+                const currentPlayer = database.players.find((p) => p.ws === ws)
+                const newRoom = RoomFactory.createRoom(currentPlayer, ws, database)
+                const response = {
+                    type: ResponseTypes.UPDATE_ROOM,
+                    data: JSON.stringify(database.rooms),
+                    id: 0
+                }
+                database.players.forEach((user)=>{
+                    user.ws.send(JSON.stringify(response))
+                })
                 break;
+
+            case RequestTypes.ADD_USER:
+                const currentPlayer2 = database.players.find((p) => p.ws === ws)
+                log(parsed)
+                const reqbody2 = JSON.parse(parsed.data).indexRoom
+                const room = database.rooms.find((r) => r.roomId === reqbody2)
+                room.addPlayer(currentPlayer2)
+                const newGame = GameFactory.createGame(room, ws, database)
+                newGame.players.forEach((p)=>{
+                    const response = {
+                        type: ResponseTypes.UPDATE_ROOM,
+                        data: JSON.stringify(database.rooms),
+                        id: 0
+                    }
+                    p.ws.send(JSON.stringify(response))
+                })
 
         }
     });

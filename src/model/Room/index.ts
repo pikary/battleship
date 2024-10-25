@@ -8,23 +8,17 @@ export class RoomFactory{
     public static createRoom(initialPlayer:Player,ws:WebSocket,db:IDatabase){
         const newRoom = new Room(initialPlayer)
         db.rooms.push(newRoom)
-        // update rooms in frontend
-        const response = {
-            type:ResponseTypes.UPDATE_ROOM,
-            data: JSON.stringify(db.rooms),
-            id:0
-        }
-        ws.send(JSON.stringify(response))
+
         return newRoom
     }
 }
 export class Room {
     static roomCounter = 1;
-    id: number;
+    roomId: number;
     roomUsers: Player[];
 
     constructor(player: Player) {
-        this.id = Room.roomCounter++;
+        this.roomId = Room.roomCounter++;
         this.roomUsers = [player];
     }
 
