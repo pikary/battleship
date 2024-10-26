@@ -15,11 +15,10 @@ export class GamePlayerFactory{
 
 export class GamePlayer extends Player{
     flot:Flot
-    constructor(id:number,name: string, ws: WebSocket) {
-        super(name, '', ws);
+    constructor(id:number ,name: string, ws: WebSocket) {
+        super(name, '', ws,id);
         this.flot = { ships: [] };  
     }
-    
 
     addShips(ships:Ship[]){
         this.flot.ships = ships

@@ -43,7 +43,7 @@ export class PlayerFactory {
 }
 
 export class Player {
-    static idCounter = 0;
+    static idCounter = 1;
     id: number;
     name: string;
     password: string;
