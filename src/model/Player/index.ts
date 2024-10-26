@@ -43,14 +43,14 @@ export class PlayerFactory {
 }
 
 export class Player {
-    static idCounter = 1;
+    static idCounter = 0;
     id: number;
     name: string;
     password: string;
     ws: WebSocket;
 
-    constructor(name: string, password: string, ws: WebSocket) {
-        this.id = Player.idCounter++;
+    constructor(name: string, password: string, ws: WebSocket, id?: number) {
+        this.id = id !== undefined ? id : Player.idCounter++; // Use provided id or increment the counter
         this.name = name;
         this.password = password;
         this.ws = ws;

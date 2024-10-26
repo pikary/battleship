@@ -6,6 +6,7 @@ import { LoginRequest } from './model/Player/types';
 import database from './db';
 import { log } from 'console';
 import { GameFactory } from './model/Game';
+import { Flot, Ship } from './model/Game/types';
 
 const wss = new WebSocketServer({
     port: 3000, perMessageDeflate: false
@@ -21,10 +22,8 @@ wss.on('connection', (ws) => {
     })
     ws.on('message', (message: SocketRequest) => {
         // ws.send(JSON.stringify({msg:'niggers'}))
-        console.log(message);
-        
+
         const parsed = JSON.parse(message.toString())
-    
         switch (parsed.type) {
             case RequestTypes.REGISTER:
                 const reqbody = JSON.parse((parsed.data)) as LoginRequest
@@ -44,7 +43,7 @@ wss.on('connection', (ws) => {
                         id: 0,
                     }));
                 })
-       
+
 
 
                 break
@@ -58,19 +57,19 @@ wss.on('connection', (ws) => {
                     data: JSON.stringify(database.rooms),
                     id: 0
                 }
-                database.players.forEach((user)=>{
+                database.players.forEach((user) => {
                     user.ws.send(JSON.stringify(response))
                 })
                 break;
 
             case RequestTypes.ADD_USER:
                 const currentPlayer2 = database.players.find((p) => p.ws === ws)
-                log(parsed)
                 const reqbody2 = JSON.parse(parsed.data).indexRoom
                 const room = database.rooms.find((r) => r.roomId === reqbody2)
                 room.addPlayer(currentPlayer2)
                 const newGame = GameFactory.createGame(room, ws, database)
-                newGame.players.forEach((p)=>{
+                database.games.push(newGame)
+                newGame.players.forEach((p) => {
                     const response = {
                         type: ResponseTypes.UPDATE_ROOM,
                         data: JSON.stringify(database.rooms),
@@ -78,6 +77,37 @@ wss.on('connection', (ws) => {
                     }
                     p.ws.send(JSON.stringify(response))
                 })
+                break;
+            case RequestTypes.ADD_SHIPS:
+                log(parsed)
+                const reqbody3 = JSON.parse(parsed.data)
+                const ships = reqbody3.ships as Ship[]
+                const gameId = reqbody3.gameId
+                const indexPlayer = reqbody3.indexPlayer
+                const currentGame = database.games.find(game => game.id === gameId)
+
+                console.log('THIS IS ADD_SHIP CALL');
+                log(currentGame.players)
+                if (currentGame.arePlayersReady()) {
+                    currentGame.players.forEach((pl) => {
+                        const response = {
+                            type: ResponseTypes.START_GAME,
+                            data: JSON.stringify({
+                                ships: pl.flot.ships,
+                                currentPlayerIndex: pl.id
+                            })
+                        }
+                        pl.ws.send(JSON.stringify(response))
+                    })
+                } else {
+                    const targetPlayer = currentGame.players.find((pl) => pl.id === indexPlayer)
+                    targetPlayer.addShips(ships)
+                }
+                break;
+            //start game if 2 players added ships
+                default:
+                    break
+
 
         }
     });
