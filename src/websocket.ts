@@ -79,15 +79,15 @@ wss.on('connection', (ws) => {
                 })
                 break;
             case RequestTypes.ADD_SHIPS:
-                log(parsed)
+                console.log('THIS IS ADD_SHIP CALL');
                 const reqbody3 = JSON.parse(parsed.data)
                 const ships = reqbody3.ships as Ship[]
                 const gameId = reqbody3.gameId
                 const indexPlayer = reqbody3.indexPlayer
                 const currentGame = database.games.find(game => game.id === gameId)
+                const targetPlayer = currentGame.players.find((pl) => pl.id === indexPlayer)
+                targetPlayer.addShips(ships)
 
-                console.log('THIS IS ADD_SHIP CALL');
-                log(currentGame.players)
                 if (currentGame.arePlayersReady()) {
                     currentGame.players.forEach((pl) => {
                         const response = {
@@ -99,14 +99,15 @@ wss.on('connection', (ws) => {
                         }
                         pl.ws.send(JSON.stringify(response))
                     })
-                } else {
-                    const targetPlayer = currentGame.players.find((pl) => pl.id === indexPlayer)
-                    targetPlayer.addShips(ships)
                 }
                 break;
             //start game if 2 players added ships
+
+
+            
                 default:
                     break
+
 
 
         }

@@ -42,6 +42,8 @@ export class Game {
     }
 
     arePlayersReady(): boolean {
+        console.log(this.players);
+        
         return this.players.every(player => player.flot.ships.length > 0);
     }
     
