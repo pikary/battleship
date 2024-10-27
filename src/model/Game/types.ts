@@ -4,6 +4,7 @@ import { WebSocket } from "http";
 interface Position {
     x: number;
     y: number;
+    isHit:boolean
 }
 
 // Interface for a single ship
