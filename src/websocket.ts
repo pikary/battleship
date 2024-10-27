@@ -117,10 +117,11 @@ wss.on('connection', (ws) => {
                                 const turnResponse = {
                                     type: ResponseTypes.TURN,
                                     data: JSON.stringify({
-                                        currentPlayer: [currentGame.players[0].id]
+                                        currentPlayer: currentGame.players[0].id
                                     })
                                 }
-                                pl.ws.send(JSON.stringify(turnResponse))
+                                currentGame.setTurn(currentGame.players[0])
+                                    pl.ws.send(JSON.stringify(turnResponse))
                             });
 
                         }
@@ -136,8 +137,13 @@ wss.on('connection', (ws) => {
                 const {x,y, gameId,indexPlayer} = reqbody
                 const currentGame = database.games.find((g)=>g.id === gameId)
                 const targetPlayer = currentGame.players.find((p)=>p.id == indexPlayer)
+                if(currentGame.checkTurn(targetPlayer)){
+                    targetPlayer.attack(x,y)
+                    currentGame.rotateTurn(targetPlayer.enemy)
+                }
+                console.log('NUH UH WAIT');
                 
-                targetPlayer.attack(x,y)
+                
 
                 break;
             }

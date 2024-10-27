@@ -34,6 +34,7 @@
         id: number;
         players: GamePlayer[];
         flot: Flot
+        currentTurnPlayer:GamePlayer
 
         constructor(room: Room) {
             this.id = Game.gameCounter++;
@@ -41,7 +42,17 @@
             // Initialize game board and ships here
         }
 
+        setTurn(player:GamePlayer){
+            this.currentTurnPlayer = player
+        }
 
+        rotateTurn(player:GamePlayer){
+            this.currentTurnPlayer = player
+        }
+
+        checkTurn(player:GamePlayer){
+            return player == this.currentTurnPlayer
+        }
         setConfrontation(){
             this.players[0].setEnemy(this.players[1])
             this.players[1].setEnemy(this.players[0])

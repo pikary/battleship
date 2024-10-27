@@ -4,12 +4,12 @@ import { WebSocket } from "http";
 interface Position {
     x: number;
     y: number;
-    isHit:boolean
 }
 
 // Interface for a single ship
 export interface Ship {
     position: Position;
+    shotPositions? :Position[];
     direction: boolean;
     length: number;
     type: "small" | "medium" | "large" | "huge";
