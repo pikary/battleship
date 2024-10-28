@@ -129,22 +129,22 @@ export class GamePlayer extends Player {
         this.incWins()
         const player = database.players.find((pl) => pl.id === this.id);
         if (player) {
-          player.wins = this.wins;
+            player.wins = this.wins;
         }
 
         this.ws.send(JSON.stringify(finishResponse));
         this.enemy.ws.send(JSON.stringify(finishResponse));
+
         const players = database.players
-        this.ws.send(JSON.stringify({
+        const playersData = JSON.stringify(players.map((i) => ({ ...i })));
+        const message = JSON.stringify({
             type: ResponseTypes.UPDATE_WINNERS,
-            data: JSON.stringify(players.map((i) => ({ ...i }))),
+            data: playersData,
             id: 0
-        }));
-        this.enemy.ws.send(JSON.stringify({
-            type: ResponseTypes.UPDATE_WINNERS,
-            data: JSON.stringify(players.map((i) => ({ ...i }))),
-            id: 0
-        }));
+        });
+        
+        this.ws.send(message)
+        this.enemy.ws.send(message)
     }
 
 

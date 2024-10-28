@@ -1,19 +1,16 @@
 import { WebSocketServer } from 'ws';
-import { Player, PlayerFactory } from './model/Player';
-import { Room, RoomFactory } from './model/Room';
+import {  PlayerFactory } from './model/Player';
+import { RoomFactory } from './model/Room';
 import { SocketRequest, RequestTypes, ResponseTypes } from './types';
 import { LoginRequest } from './model/Player/types';
 import database from './db';
-import { log } from 'console';
 import { GameFactory } from './model/Game';
-import { Flot, Ship } from './model/Game/types';
+import {  Ship } from './model/Game/types';
 
 const wss = new WebSocketServer({
     port: 3000, perMessageDeflate: false
 });
 
-const players: Player[] = [];
-const rooms: Room[] = [];
 
 wss.on('connection', (ws) => {
     ws.on('open', () => {
