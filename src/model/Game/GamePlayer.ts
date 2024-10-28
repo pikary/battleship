@@ -53,11 +53,17 @@ export class GamePlayer extends Player {
                 const isShipKilled = ship.shotPositions.length === ship.length;
 
                 const status = isShipKilled ? 'kill' : 'shot';
+                
+                
                 this.sendAttackResponse(x, y, status);
+                if(this.checkIfPlayerWon()){
+                    
+                }
                 return true;
             }   
         }
         this.sendAttackResponse(x, y, 'miss');
+        // this.switchTurn(status)
 
         return false;  // The attack missed
     }
@@ -87,20 +93,41 @@ export class GamePlayer extends Player {
         // Send response to both attacker and defender
         this.ws.send(JSON.stringify(responseAttacker));
         this.enemy.ws.send(JSON.stringify(responseDefender));
+        this.sendTurnResponse(status)
+        if(status === 'kill' || status === 'shot'){
+            const hadWon = this.checkIfPlayerWon()
+            if (hadWon){
+                this.sendFinishResponse()
+            }
+        }
     }
 
-    switchTurn() {
-    
+    sendTurnResponse(status:'shot' | 'kill' | 'miss') {
         const turnResponse = {
             type: ResponseTypes.TURN,
             data: JSON.stringify({
-                currentPlayer: this.enemy.id  // Notify that it's the enemy's turn
-            })
+                currentPlayer:status === 'shot' || status === 'kill' ? this.id :  this.enemy.id  //если попал дай возможность еще раз ходить
+            }),
+            id:0
         };
-
-
         this.ws.send(JSON.stringify(turnResponse));
         this.enemy.ws.send(JSON.stringify(turnResponse));
     }
 
+    sendFinishResponse(){
+        const finishResponse = {
+            type:ResponseTypes.FINISH,
+            data:JSON.stringify({
+                winPlayer: this.id
+            }),
+            id:0
+        }
+        this.ws.send(JSON.stringify(finishResponse));
+        this.enemy.ws.send(JSON.stringify(finishResponse));
+    }
+
+
+    checkIfPlayerWon(): boolean {
+        return this.enemy.flot.ships.every(ship => ship.shotPositions && ship.shotPositions.length === ship.length);
+    }
 }

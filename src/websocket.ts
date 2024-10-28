@@ -121,7 +121,7 @@ wss.on('connection', (ws) => {
                                     })
                                 }
                                 currentGame.setTurn(currentGame.players[0])
-                                    pl.ws.send(JSON.stringify(turnResponse))
+                                pl.ws.send(JSON.stringify(turnResponse))
                             });
 
                         }
@@ -132,23 +132,52 @@ wss.on('connection', (ws) => {
 
             case RequestTypes.ATTACK: {
                 // Handle attack logic here
-                const reqbody = JSON.parse(parsed.data )
+                const reqbody = JSON.parse(parsed.data)
                 //TODO: следить за тем кто ходит в свою очередь
-                const {x,y, gameId,indexPlayer} = reqbody
-                const currentGame = database.games.find((g)=>g.id === gameId)
-                const targetPlayer = currentGame.players.find((p)=>p.id == indexPlayer)
-                if(currentGame.checkTurn(targetPlayer)){
-                    targetPlayer.attack(x,y)
-                    currentGame.rotateTurn(targetPlayer.enemy)
+                const { x, y, gameId, indexPlayer } = reqbody
+                const currentGame = database.games.find((g) => g.id === gameId)
+                const targetPlayer = currentGame.players.find((p) => p.id == indexPlayer)
+                if (currentGame.checkTurn(targetPlayer)) {
+                    const shot = targetPlayer.attack(x, y)
+                    if (shot === true) {
+                        //если попал дать возможность ходить еще раз
+                        break;
+                    } else {
+                        currentGame.rotateTurn(targetPlayer.enemy)
+                        break;
+                    }
                 }
-                console.log('NUH UH WAIT');
-                
-                
-
                 break;
             }
 
 
+            case RequestTypes.RANDOM_ATTACK: {
+                const BOARD_WIDTH = 10
+                const BOARD_HEIGHT = 10
+                const reqbody = JSON.parse(parsed.data);
+                const { gameId, indexPlayer } = reqbody;
+            
+                // Generate random x and y coordinates
+                const x = Math.floor(Math.random() * BOARD_WIDTH);  // Assume boardWidth is defined
+                const y = Math.floor(Math.random() * BOARD_HEIGHT); // Assume boardHeight is defined
+            
+                const currentGame = database.games.find((g) => g.id === gameId)
+                const targetPlayer = currentGame.players.find((p) => p.id == indexPlayer)
+                if (currentGame.checkTurn(targetPlayer)) {
+                    const shot = targetPlayer.attack(x, y)
+                    if (shot === true) {
+                        //если попал дать возможность ходить еще раз
+                        break;
+                    } else {
+                        currentGame.rotateTurn(targetPlayer.enemy)
+                        break;
+                    }
+                }
+            
+                // TODO: следить за тем кто ходит в свою очередь
+                break;
+            }
+             
             default:
                 console.log('Unknown request type:', parsed.type);
                 break;
