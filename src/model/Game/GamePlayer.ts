@@ -3,7 +3,7 @@ import { Player } from "../Player";
 import { WebSocket } from "ws";
 import { ResponseTypes } from "../../types";
 import { log } from "node:console";
-
+import database from "../../db";
 
 export class GamePlayerFactory {
     public static createPlayersForGame(players: Player[]) {
@@ -49,7 +49,7 @@ export class GamePlayer extends Player {
             const endY = ship.direction === true ? startY + ship.length - 1 : startY
 
             if (startX <= x && endX >= x && startY <= y && endY >= y) {
-                
+
                 ship.shotPositions.push({ x: x, y: y })
                 const isShipKilled = ship.shotPositions.length === ship.length;
 
@@ -101,8 +101,6 @@ export class GamePlayer extends Player {
         if (status === 'kill' || status === 'shot') {
             const hadWon = this.checkIfPlayerWon()
             if (hadWon) {
-                console.log("YAAAAAAAAAAAAAAAAAY");
-                
                 this.sendFinishResponse()
             }
         }
@@ -128,21 +126,24 @@ export class GamePlayer extends Player {
             }),
             id: 0
         }
+        this.incWins()
         this.ws.send(JSON.stringify(finishResponse));
         this.enemy.ws.send(JSON.stringify(finishResponse));
+        const players = database.players
+        this.ws.send(JSON.stringify({
+            type: ResponseTypes.UPDATE_WINNERS,
+            data: JSON.stringify(players.map((i) => ({ ...i, wins: this.wins }))),
+            id: 0
+        }));
+        this.enemy.ws.send(JSON.stringify({
+            type: ResponseTypes.UPDATE_WINNERS,
+            data: JSON.stringify(players.map((i) => ({ ...i }))),
+            id: 0
+        }));
     }
 
 
     checkIfPlayerWon(): boolean {
-        // console.log('CHECKPOINT');
-        
-        // this.enemy.flot.ships.forEach(ship => {
-        //     if(ship.shotPositions){
-        //         console.log(`${ship.shotPositions.length} -${ship.length} ` );
-        //     }
-        // })
-        // console.log('CHECKPINTS');
-        
         return this.enemy.flot.ships.every(ship => ship.shotPositions && ship.shotPositions.length >= ship.length);
     }
 }

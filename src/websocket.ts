@@ -39,7 +39,7 @@ wss.on('connection', (ws) => {
 
                         user.ws.send(JSON.stringify({
                             type: ResponseTypes.UPDATE_WINNERS,
-                            data: JSON.stringify(database.players.map((i) => ({ ...i, wins: 1 }))),
+                            data: JSON.stringify(database.players.map((i) => ({ ...i }))),
                             id: 0
                         }));
                     });

@@ -47,6 +47,7 @@ export class Player {
     id: number;
     name: string;
     password: string;
+    wins:number 
     ws: WebSocket;
 
     constructor(name: string, password: string, ws: WebSocket, id?: number) {
@@ -54,10 +55,14 @@ export class Player {
         this.name = name;
         this.password = password;
         this.ws = ws;
+        this.wins = 0
     }
 
     sendMessage(type: string, data: any) {
         this.ws.send(JSON.stringify({ type, data:JSON.stringify(data), id: 0 }));
     }
 
+    incWins(){
+        this.wins = this.wins + 1
+    }
 }
