@@ -38,6 +38,9 @@ export class GamePlayer extends Player {
     attack(x: number, y: number): boolean {
 
         for (const ship of this.enemy.flot.ships) {
+            if (ship.shotPositions == undefined) {
+                ship.shotPositions = []
+            }
             // {X:4, y:3, length:3,direction:false} ---> Начало - x4 --- конец - x7
             const startX = ship.position.x
             const startY = ship.position.y
@@ -46,9 +49,7 @@ export class GamePlayer extends Player {
             const endY = ship.direction === true ? startY + ship.length - 1 : startY
 
             if (startX <= x && endX >= x && startY <= y && endY >= y) {
-                if (!ship.shotPositions) {
-                    ship.shotPositions = []
-                }
+                
                 ship.shotPositions.push({ x: x, y: y })
                 const isShipKilled = ship.shotPositions.length === ship.length;
 
@@ -75,6 +76,8 @@ export class GamePlayer extends Player {
             data: JSON.stringify({
                 position: { x: x, y: y },
                 currentPlayer: this.id,
+                status: status
+
             },),
             status: status
 
@@ -86,7 +89,9 @@ export class GamePlayer extends Player {
                 position: { x: x, y: y },
                 currentPlayer: this.enemy.id,
                 status: status
-            })
+
+            }),
+
         };
 
         // Send response to both attacker and defender
@@ -96,6 +101,8 @@ export class GamePlayer extends Player {
         if (status === 'kill' || status === 'shot') {
             const hadWon = this.checkIfPlayerWon()
             if (hadWon) {
+                console.log("YAAAAAAAAAAAAAAAAAY");
+                
                 this.sendFinishResponse()
             }
         }
@@ -108,7 +115,6 @@ export class GamePlayer extends Player {
                 currentPlayer: status === 'shot' || status === 'kill' ? this.id : this.enemy.id  //если попал дай возможность еще раз ходить
             }),
             id: 0,
-            status: status
         };
         this.ws.send(JSON.stringify(turnResponse));
         this.enemy.ws.send(JSON.stringify(turnResponse));
@@ -128,7 +134,15 @@ export class GamePlayer extends Player {
 
 
     checkIfPlayerWon(): boolean {
-
-        return this.enemy.flot.ships.every(ship => ship.shotPositions && ship.shotPositions.length === ship.length);
+        // console.log('CHECKPOINT');
+        
+        // this.enemy.flot.ships.forEach(ship => {
+        //     if(ship.shotPositions){
+        //         console.log(`${ship.shotPositions.length} -${ship.length} ` );
+        //     }
+        // })
+        // console.log('CHECKPINTS');
+        
+        return this.enemy.flot.ships.every(ship => ship.shotPositions && ship.shotPositions.length >= ship.length);
     }
 }
