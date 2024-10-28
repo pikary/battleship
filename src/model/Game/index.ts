@@ -60,16 +60,5 @@
         arePlayersReady(): boolean {
             return this.players.every(player => player.flot.ships.length > 0);
         }
-        
-
-        startGame() {
-            this.notifyPlayers('start_game', {
-                ships: [],  // Player's ships (not the enemy's)
-                currentPlayerIndex: this.players[0].id,
-            });
-        }
-
-        notifyPlayers(type: string, data: any) {
-            this.players.forEach(player => player.sendMessage(type, data));
-        }
+    
     }

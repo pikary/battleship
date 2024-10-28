@@ -15,10 +15,11 @@ export class GamePlayerFactory {
     }
 }
 
+
+
 export class GamePlayer extends Player {
     flot: Flot
     enemy: GamePlayer
-
 
     constructor(id: number, name: string, ws: WebSocket) {
         super(name, '', ws, id);
@@ -33,10 +34,7 @@ export class GamePlayer extends Player {
     }
 
 
-
-
     attack(x: number, y: number): boolean {
-
         for (const ship of this.enemy.flot.ships) {
             if (ship.shotPositions == undefined) {
                 ship.shotPositions = []

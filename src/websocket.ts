@@ -170,8 +170,6 @@ wss.on('connection', (ws) => {
                         break;
                     }
                 }
-            
-                // TODO: следить за тем кто ходит в свою очередь
                 break;
             }
              
