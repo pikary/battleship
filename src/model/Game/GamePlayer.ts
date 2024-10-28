@@ -33,10 +33,10 @@ export class GamePlayer extends Player {
     }
 
 
-    
+
 
     attack(x: number, y: number): boolean {
-        
+
         for (const ship of this.enemy.flot.ships) {
             // {X:4, y:3, length:3,direction:false} ---> Начало - x4 --- конец - x7
             const startX = ship.position.x
@@ -46,21 +46,19 @@ export class GamePlayer extends Player {
             const endY = ship.direction === true ? startY + ship.length - 1 : startY
 
             if (startX <= x && endX >= x && startY <= y && endY >= y) {
-                if(!ship.shotPositions){
+                if (!ship.shotPositions) {
                     ship.shotPositions = []
                 }
-                ship.shotPositions.push({x:x,y:y})
+                ship.shotPositions.push({ x: x, y: y })
                 const isShipKilled = ship.shotPositions.length === ship.length;
 
                 const status = isShipKilled ? 'kill' : 'shot';
-                
-                
+
+
                 this.sendAttackResponse(x, y, status);
-                if(this.checkIfPlayerWon()){
-                    
-                }
+
                 return true;
-            }   
+            }
         }
         this.sendAttackResponse(x, y, 'miss');
         // this.switchTurn(status)
@@ -77,8 +75,9 @@ export class GamePlayer extends Player {
             data: JSON.stringify({
                 position: { x: x, y: y },
                 currentPlayer: this.id,
-                status: status
-            })
+            },),
+            status: status
+
         };
 
         const responseDefender = {
@@ -94,33 +93,34 @@ export class GamePlayer extends Player {
         this.ws.send(JSON.stringify(responseAttacker));
         this.enemy.ws.send(JSON.stringify(responseDefender));
         this.sendTurnResponse(status)
-        if(status === 'kill' || status === 'shot'){
+        if (status === 'kill' || status === 'shot') {
             const hadWon = this.checkIfPlayerWon()
-            if (hadWon){
+            if (hadWon) {
                 this.sendFinishResponse()
             }
         }
     }
 
-    sendTurnResponse(status:'shot' | 'kill' | 'miss') {
+    sendTurnResponse(status: 'shot' | 'kill' | 'miss') {
         const turnResponse = {
             type: ResponseTypes.TURN,
             data: JSON.stringify({
-                currentPlayer:status === 'shot' || status === 'kill' ? this.id :  this.enemy.id  //если попал дай возможность еще раз ходить
+                currentPlayer: status === 'shot' || status === 'kill' ? this.id : this.enemy.id  //если попал дай возможность еще раз ходить
             }),
-            id:0
+            id: 0,
+            status: status
         };
         this.ws.send(JSON.stringify(turnResponse));
         this.enemy.ws.send(JSON.stringify(turnResponse));
     }
 
-    sendFinishResponse(){
+    sendFinishResponse() {
         const finishResponse = {
-            type:ResponseTypes.FINISH,
-            data:JSON.stringify({
+            type: ResponseTypes.FINISH,
+            data: JSON.stringify({
                 winPlayer: this.id
             }),
-            id:0
+            id: 0
         }
         this.ws.send(JSON.stringify(finishResponse));
         this.enemy.ws.send(JSON.stringify(finishResponse));
@@ -128,6 +128,7 @@ export class GamePlayer extends Player {
 
 
     checkIfPlayerWon(): boolean {
+
         return this.enemy.flot.ships.every(ship => ship.shotPositions && ship.shotPositions.length === ship.length);
     }
 }
